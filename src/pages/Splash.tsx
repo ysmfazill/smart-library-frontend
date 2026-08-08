@@ -129,11 +129,11 @@ const Splash: React.FC<SplashProps> = ({ onComplete }) => {
         <main className="relative z-10 w-full max-w-2xl text-center flex flex-col items-center">
           
           {/* Logo */}
-          <div className="logo-fade w-24 h-24 mb-4">
+          <div className="logo-fade w-32 h-32 mb-2 flex items-center justify-center">
             <img
-              alt="Smart Library Logo"
+              alt="Readify App Logo"
               className="w-full h-full object-contain drop-shadow-xl"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAteYLaI6fKJ6E6TySQQR6CCI88yln9fkVUmPONkwyKUw5TrmNNJDWbXfZnBhYSOQE-rRJvLLID5JSGf_H0zq6Y29yuIUhdS1X6WsbF63lgvujruooc0BhuatnubmfAWiTBAJDZWwLc4ZocnRYCJ00IJ_nC7U9VgWyaCU0tg9kO3DrseQW8uvJIEc9vxl7_xjVutFCFhqY3jCG0cG8DCOzvlrGYLuMsFw4hpLtnlRW6ZQC1KB7_rgY"
+              src="/logo.png"
             />
           </div>
 
@@ -151,12 +151,12 @@ const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           </div>
 
           {/* Title Text */}
-          <div className="text-fade space-y-3 mt-4">
-            <h1 className="text-2xl md:text-4xl font-bold font-display tracking-tight text-on-surface">
-              Smart Library
+          <div className="text-fade space-y-2 mt-2">
+            <h1 className="text-3xl md:text-5xl font-bold font-display tracking-tight text-primary">
+              Readify App
             </h1>
-            <p className="text-primary font-medium tracking-wide uppercase text-sm">
-              Recommendation System
+            <p className="text-on-surface-variant font-medium tracking-wide uppercase text-xs sm:text-sm">
+              Smart Recommendation System
             </p>
           </div>
 

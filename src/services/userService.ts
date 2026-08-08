@@ -7,7 +7,8 @@ export const userService = {
    * Get full user profile with aggregated stats and interests.
    * Uses GET /api/users/profile/{id}
    */
-  getProfile: async (userId: number): Promise<UserProfileData> => {
+  getProfile: async (userId: number): Promise<UserProfileData | null> => {
+    if (!userId || userId <= 0) return null as any;
     const res = await api.get(`/users/profile/${userId}`);
     return mapUserProfileDTO(res.data?.data || res.data);
   },
@@ -17,6 +18,7 @@ export const userService = {
    * Uses GET /api/users/{id}
    */
   getUserById: async (userId: number) => {
+    if (!userId || userId <= 0) return null;
     const res = await api.get(`/users/${userId}`);
     return res.data?.data || res.data;
   },
@@ -30,6 +32,7 @@ export const userService = {
     email?: string;
     avatar?: string;
   }) => {
+    if (!userId || userId <= 0) return null;
     const res = await api.put(`/users/${userId}`, data);
     return res.data?.data || res.data;
   },
@@ -39,6 +42,7 @@ export const userService = {
    * Uses DELETE /api/users/{id}
    */
   deleteUser: async (userId: number) => {
+    if (!userId || userId <= 0) return null;
     const res = await api.delete(`/users/${userId}`);
     return res.data;
   },

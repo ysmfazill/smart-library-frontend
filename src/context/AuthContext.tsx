@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(false);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(false);
 
-  const isAuthenticated = !!user && !!localStorage.getItem('jwt_token');
+  const isAuthenticated = !!user && typeof user.id === 'number' && user.id > 0 && !!localStorage.getItem('jwt_token');
   const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN';
 
   // Determine if onboarding is needed from the stored user's interests

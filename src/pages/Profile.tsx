@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import AppLayout from '../components/AppLayout';
 import { useUserProfile } from '../context/UserProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useReadingHistory } from '../context/ReadingHistoryContext';
@@ -16,7 +15,7 @@ interface FieldRowProps {
   onSave: (name: string, value: string) => void;
   multiline?: boolean;
 }
-const FieldRow: React.FC<FieldRowProps> = ({ label, value, name, type = 'text', placeholder, onSave, multiline = false }) => {
+const FieldRow: React.FC<FieldRowProps> = React.memo(({ label, value, name, type = 'text', placeholder, onSave, multiline = false }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
 
@@ -83,7 +82,7 @@ const FieldRow: React.FC<FieldRowProps> = ({ label, value, name, type = 'text', 
       </div>
     </div>
   );
-};
+});
 
 // ── Tier badge ────────────────────────────────────────────────
 const TIER_COLORS: Record<string, string> = {
@@ -110,9 +109,9 @@ const Profile: React.FC = () => {
   const [saveNotice, setSaveNotice] = useState(false);
 
   // Computed streak from real history data
-  const streak = computeStreak(historyEntries);
+  const streak = React.useMemo(() => computeStreak(historyEntries), [historyEntries]);
 
-  const handleSave = (name: string, value: string) => {
+  const handleSave = React.useCallback((name: string, value: string) => {
     let finalValue = value;
     if (name === 'role') {
       finalValue = value.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'USER';
@@ -120,7 +119,7 @@ const Profile: React.FC = () => {
     updateProfile({ [name]: finalValue } as any);
     setSaveNotice(true);
     setTimeout(() => setSaveNotice(false), 2500);
-  };
+  }, [updateProfile]);
 
   const [achievements, setAchievements] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -143,30 +142,21 @@ const Profile: React.FC = () => {
     loadStats();
   }, [user?.id]);
 
-  const statCards = [
+  const statCards = React.useMemo(() => [
     { label: 'Books Completed',  value: completedBooks.length,    icon: 'check_circle',   color: 'text-emerald-600', bg: 'bg-emerald-50'    },
     { label: 'In Progress',      value: inProgressBooks.length,   icon: 'menu_book',      color: 'text-primary',     bg: 'bg-primary/10'    },
     { label: 'Global Rank',      value: stats?.globalRank ? `#${stats.globalRank}` : '—', icon: 'public', color: 'text-blue-500', bg: 'bg-blue-50' },
     { label: 'Reading Streak',   value: streak > 0 ? `${streak} days` : '—', icon: 'local_fire_department', color: 'text-orange-500', bg: 'bg-orange-50' },
-  ];
+  ], [completedBooks.length, inProgressBooks.length, stats?.globalRank, streak]);
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen relative overflow-x-hidden">
-      {/* Atmospheric bg */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-      </div>
+    <AppLayout>
 
-      <Navbar />
-      <Sidebar />
-
-      <main className="md:ml-sidebar-width pt-28 px-container-padding pb-section-gap max-w-[1440px] mx-auto min-h-screen">
-
-        {/* Save toast */}
-        <div className={`fixed top-24 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl ai-gradient-bg text-white shadow-lg transition-all duration-300 ${saveNotice ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
-          <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-          Profile updated!
-        </div>
+            {/* Save toast */}
+            <div className={`fixed top-20 sm:top-24 right-4 sm:right-6 z-50 flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl ai-gradient-bg text-white shadow-lg text-xs sm:text-sm transition-all duration-300 ${saveNotice ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              Profile updated!
+            </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-gutter">
 
@@ -336,21 +326,9 @@ const Profile: React.FC = () => {
                 These actions are UI-only. No data will be permanently deleted.
               </p>
             </div>
-
           </div>
         </div>
-      </main>
-
-      <footer className="md:ml-sidebar-width bg-surface border-t border-outline-variant/30 py-8 mt-section-gap relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-center px-container-padding max-w-[1440px] mx-auto gap-4 text-label-sm text-on-surface-variant">
-          <p>© 2024 Aethelgard AI. Precision in knowledge.</p>
-          <div className="flex gap-8">
-            <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 };
 

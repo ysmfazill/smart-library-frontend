@@ -26,14 +26,16 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
   const [loading, setLoading] = useState(false);
   const mountedRef = useRef(true);
 
+  const safeEntries = useMemo(() => (Array.isArray(entries) ? entries : []), [entries]);
+
   // Derived lists
   const inProgressBooks = useMemo(
-    () => entries.filter(e => !e.completed && e.progress < 100),
-    [entries]
+    () => safeEntries.filter(e => e && !e.completed && e.progress < 100),
+    [safeEntries]
   );
   const completedBooks = useMemo(
-    () => entries.filter(e => e.completed || e.progress >= 100),
-    [entries]
+    () => safeEntries.filter(e => e && (e.completed || e.progress >= 100)),
+    [safeEntries]
   );
 
   // Load history from API
@@ -46,11 +48,12 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
     try {
       const res = await historyService.getReadingHistory(user.id);
       if (mountedRef.current) {
-        const content = res?.content || (Array.isArray(res) ? res : []);
-        setEntries(content.map(mapHistoryDTO));
+        const rawContent = res?.data?.content || res?.content || res?.data || (Array.isArray(res) ? res : []);
+        const safeContent = Array.isArray(rawContent) ? rawContent : [];
+        setEntries(safeContent.map(mapHistoryDTO));
       }
     } catch {
-      // silent fail — start with empty history
+      if (mountedRef.current) setEntries([]);
     } finally {
       if (mountedRef.current) setLoading(false);
     }
@@ -67,7 +70,8 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
 
     // Optimistic: add a stub entry immediately
     setEntries(prev => {
-      if (prev.some(e => e.bookId === bookId)) return prev;
+      const safePrev = Array.isArray(prev) ? prev : [];
+      if (safePrev.some(e => e && String(e.bookId) === String(bookId))) return safePrev;
       const stub: HistoryEntry = {
         id: `temp-${bookId}`,
         bookId,
@@ -76,15 +80,14 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
         completed: false,
         lastReadAt: new Date().toISOString(),
       };
-      return [...prev, stub];
+      return [...safePrev, stub];
     });
 
     try {
       await historyService.startReading(user.id, Number(bookId));
-      await load(); // Reload to get proper server data with embedded book info
+      await load();
     } catch {
-      // Revert if API call fails
-      setEntries(prev => prev.filter(e => e.bookId !== bookId));
+      setEntries(prev => (Array.isArray(prev) ? prev.filter(e => e && String(e.bookId) !== String(bookId)) : []));
     }
   }, [user?.id, load]);
 
@@ -94,13 +97,15 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
     if (!user?.id) return;
 
     // Optimistic update
-    setEntries(prev => prev.map(e =>
-      e.bookId === bookId
-        ? { ...e, progress, completed: progress >= 100, lastReadAt: new Date().toISOString() }
-        : e
-    ));
+    setEntries(prev => {
+      const safePrev = Array.isArray(prev) ? prev : [];
+      return safePrev.map(e =>
+        e && String(e.bookId) === String(bookId)
+          ? { ...e, progress, completed: progress >= 100, lastReadAt: new Date().toISOString() }
+          : e
+      );
+    });
 
-    // Debounce the API call
     if (updateTimeouts.current[bookId]) {
       clearTimeout(updateTimeouts.current[bookId]);
     }
@@ -109,10 +114,9 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
       try {
         await historyService.updateProgress(user.id, Number(bookId), progress);
       } catch {
-        // If update fails, reload from server
         await load();
       }
-    }, 1000); // 1-second debounce
+    }, 1000);
   }, [user?.id, load]);
 
   const markCompleted = useCallback(async (bookId: string) => {
@@ -120,23 +124,23 @@ export const ReadingHistoryProvider: React.FC<{ children: React.ReactNode }> = (
   }, [updateProgress]);
 
   const getEntry = useCallback(
-    (bookId: string) => entries.find(e => e.bookId === bookId),
-    [entries]
+    (bookId: string) => (Array.isArray(safeEntries) ? safeEntries.find(e => e && String(e.bookId) === String(bookId)) : undefined),
+    [safeEntries]
   );
 
   const isReading = useCallback(
-    (bookId: string) => entries.some(e => e.bookId === bookId && !e.completed && e.progress < 100),
-    [entries]
+    (bookId: string) => (Array.isArray(safeEntries) ? safeEntries.some(e => e && String(e.bookId) === String(bookId) && !e.completed && e.progress < 100) : false),
+    [safeEntries]
   );
 
   const isCompleted = useCallback(
-    (bookId: string) => entries.some(e => e.bookId === bookId && (e.completed || e.progress >= 100)),
-    [entries]
+    (bookId: string) => (Array.isArray(safeEntries) ? safeEntries.some(e => e && String(e.bookId) === String(bookId) && (e.completed || e.progress >= 100)) : false),
+    [safeEntries]
   );
 
   return (
     <ReadingHistoryContext.Provider value={{
-      historyEntries: entries,
+      historyEntries: safeEntries,
       inProgressBooks,
       completedBooks,
       loading,

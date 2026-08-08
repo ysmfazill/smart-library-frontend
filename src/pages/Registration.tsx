@@ -64,100 +64,103 @@ const Registration: React.FC = () => {
   };
 
   const inputClass =
-    'w-full pl-12 pr-4 py-4 rounded-xl border border-outline-variant bg-surface/50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-base';
+    'w-full pl-10 sm:pl-12 pr-4 py-3.5 rounded-xl border border-outline-variant bg-surface/50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm sm:text-base min-h-[44px]';
 
   return (
-    <div className="bg-surface text-on-surface overflow-x-hidden min-h-screen">
+    <div className="bg-surface text-on-surface overflow-x-hidden min-h-screen relative flex flex-col">
       <AuthNavbar rightLink={{ label: 'Sign In', href: '/login' }} />
 
-      <main className="min-h-screen flex pt-20">
+      <main className="flex-1 flex min-h-screen pt-16 sm:pt-20">
         {/* ── LEFT PANEL ── */}
-        <section className="hidden lg:flex lg:w-[45%] brand-gradient relative flex-col justify-center px-16 overflow-hidden">
+        <section className="hidden lg:flex lg:w-[45%] brand-gradient relative flex-col justify-center px-12 overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-20">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
           </div>
-          <div className="relative z-10 text-white space-y-6">
-            <h1 className="text-[48px] font-bold leading-tight tracking-[-0.02em]">
+          <div className="relative z-10 text-white space-y-6 max-w-lg">
+            <h1 className="text-3xl lg:text-5xl font-bold leading-tight tracking-tight">
               Start Your<br />Reading Journey
             </h1>
-            <p className="text-[18px] text-white/80 max-w-md leading-relaxed">
+            <p className="text-base lg:text-lg text-white/80 leading-relaxed">
               Create your account and let our engine personalize your reading experience from day one. Precision in knowledge, tailored to your intellect.
             </p>
           </div>
         </section>
 
         {/* ── RIGHT PANEL ── */}
-        <section className="w-full lg:w-[55%] flex items-center justify-center p-8 bg-background relative overflow-y-auto">
-          <div className="w-full max-w-xl fade-in-card">
-            <div className="glass-card rounded-3xl p-10 shadow-sm border border-white/50">
+        <section className="w-full lg:w-[55%] flex items-center justify-center px-4 py-8 sm:p-12 bg-background relative overflow-y-auto">
+          <div className="w-full max-w-[420px] mx-auto fade-in-card my-auto">
+            <div className="glass-card rounded-2xl p-6 sm:p-8 shadow-xl border border-white/50">
               {/* Header */}
-              <div className="mb-8 text-center">
-                <h2 className="text-[32px] font-semibold leading-[1.2] tracking-[-0.01em] text-on-surface mb-2">
-                  Create Your Account 🚀
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 mb-2">
+                  <img src="/logo.png" alt="Readify App Logo" className="w-full h-full object-contain" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface mb-1 sm:mb-2">
+                  Create Account 🚀
                 </h2>
-                <p className="text-on-surface-variant text-base">Join the next generation of academic discovery.</p>
+                <p className="text-on-surface-variant text-xs sm:text-sm">Join the next generation of digital discovery.</p>
               </div>
 
               {errorMsg && (
-                <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium text-center">
+                <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-medium text-center">
                   {errorMsg}
                 </div>
               )}
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
                 {/* Full Name */}
                 <AuthInput
                   id="fullName" type="text" required placeholder="Dr. John Doe"
                   label="Full Name" icon="person"
                   value={form.fullName}
                   onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
-                  labelClass="text-sm font-medium text-on-surface-variant"
-                  iconClass="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline"
+                  labelClass="text-xs sm:text-sm font-medium text-on-surface-variant"
+                  iconClass="material-symbols-outlined absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-outline text-lg"
                   className={inputClass}
                 />
 
-                {/* Email + Username grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <AuthInput
-                    id="reg-email" type="email" required placeholder="name@example.com"
-                    label="Email Address" icon="mail"
-                    value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    labelClass="text-sm font-medium text-on-surface-variant"
-                    iconClass="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline"
-                    className={inputClass}
-                  />
-                  <AuthInput
-                    id="username" type="text" required placeholder="johndoe"
-                    label="Username" icon="alternate_email"
-                    value={form.username}
-                    onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-                    labelClass="text-sm font-medium text-on-surface-variant"
-                    iconClass="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline"
-                    className={inputClass}
-                  />
-                </div>
+                {/* Email */}
+                <AuthInput
+                  id="reg-email" type="email" required placeholder="name@example.com"
+                  label="Email Address" icon="mail"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  labelClass="text-xs sm:text-sm font-medium text-on-surface-variant"
+                  iconClass="material-symbols-outlined absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-outline text-lg"
+                  className={inputClass}
+                />
+
+                {/* Username */}
+                <AuthInput
+                  id="username" type="text" required placeholder="johndoe"
+                  label="Username" icon="alternate_email"
+                  value={form.username}
+                  onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+                  labelClass="text-xs sm:text-sm font-medium text-on-surface-variant"
+                  iconClass="material-symbols-outlined absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-outline text-lg"
+                  className={inputClass}
+                />
 
                 {/* Password */}
-                <div className="space-y-2 relative">
+                <div className="space-y-1.5 relative">
                   <AuthInput
                     id="reg-password" type={showPwd ? 'text' : 'password'} required placeholder="••••••••"
                     label="Password" icon="lock"
                     value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    labelClass="text-sm font-medium text-on-surface-variant"
-                    iconClass="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline"
+                    labelClass="text-xs sm:text-sm font-medium text-on-surface-variant"
+                    iconClass="material-symbols-outlined absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-outline text-lg"
                     className={`${inputClass} pr-12`}
                     containerClass=""
                     labelRight={
-                      <span className={`text-xs font-semibold ${METER_COLORS[strength].textClass}`}>
+                      <span className={`text-[11px] sm:text-xs font-semibold ${METER_COLORS[strength].textClass}`}>
                         {METER_COLORS[strength].label}
                       </span>
                     }
                     rightElement={
                       <button type="button" onClick={() => setShowPwd(v => !v)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined">{showPwd ? 'visibility_off' : 'visibility'}</span>
+                        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors p-1">
+                        <span className="material-symbols-outlined text-lg">{showPwd ? 'visibility_off' : 'visibility'}</span>
                       </button>
                     }
                   />
@@ -180,33 +183,33 @@ const Registration: React.FC = () => {
                   label="Confirm Password" icon="lock_reset"
                   value={form.confirmPassword}
                   onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
-                  labelClass="text-sm font-medium text-on-surface-variant"
-                  iconClass="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline"
-                  className={`${inputClass} pr-24 ${passwordsMatch ? 'border-secondary' : 'border-outline-variant'}`}
+                  labelClass="text-xs sm:text-sm font-medium text-on-surface-variant"
+                  iconClass="material-symbols-outlined absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-outline text-lg"
+                  className={`${inputClass} pr-20 ${passwordsMatch ? 'border-secondary' : 'border-outline-variant'}`}
                   rightElement={
                     <>
                       {passwordsMatch && (
-                        <div className="absolute right-12 top-1/2 -translate-y-1/2 text-secondary">
-                          <span className="material-symbols-outlined">check_circle</span>
+                        <div className="absolute right-10 sm:right-12 top-1/2 -translate-y-1/2 text-secondary">
+                          <span className="material-symbols-outlined text-lg">check_circle</span>
                         </div>
                       )}
                       <button type="button" onClick={() => setShowConfirm(v => !v)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined">{showConfirm ? 'visibility_off' : 'visibility'}</span>
+                        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors p-1">
+                        <span className="material-symbols-outlined text-lg">{showConfirm ? 'visibility_off' : 'visibility'}</span>
                       </button>
                     </>
                   }
                 />
 
                 {/* Terms */}
-                <div className="flex items-start gap-3 py-2">
+                <div className="flex items-start gap-2.5 py-1">
                   <input
                     id="terms" type="checkbox" required
                     checked={form.terms}
                     onChange={e => setForm(f => ({ ...f, terms: e.target.checked }))}
-                    className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary/20 transition-all cursor-pointer mt-1"
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded border-outline-variant text-primary focus:ring-primary/20 transition-all cursor-pointer mt-0.5 shrink-0"
                   />
-                  <label className="text-xs font-semibold text-on-surface-variant leading-tight" htmlFor="terms">
+                  <label className="text-[11px] sm:text-xs font-semibold text-on-surface-variant leading-tight" htmlFor="terms">
                     I agree to the{' '}
                     <a href="#" className="text-primary hover:underline">Terms &amp; Conditions</a> and{' '}
                     <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
@@ -219,13 +222,13 @@ const Registration: React.FC = () => {
                   loading={loading}
                   loadingText="Processing..."
                   icon="arrow_forward"
-                  className="ripple w-full py-5 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-semibold text-2xl shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
+                  className="ripple w-full min-h-[48px] py-3.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Create Account
                 </AuthButton>
               </form>
 
-              <p className="mt-8 text-center text-on-surface-variant text-sm font-medium">
+              <p className="mt-6 text-center text-on-surface-variant text-xs sm:text-sm font-medium">
                 Already have an account?{' '}
                 <Link to="/login" className="text-primary font-bold hover:underline">Log in</Link>
               </p>

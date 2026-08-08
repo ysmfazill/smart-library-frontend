@@ -45,12 +45,14 @@ export const analyticsService = {
     return res.data?.data || [];
   },
 
-  getUserStatistics: async (userId: number): Promise<UserStatistics> => {
+  getUserStatistics: async (userId: number): Promise<UserStatistics | null> => {
+    if (!userId || userId <= 0) return null;
     const res = await api.get(`/statistics/user/${userId}`);
-    return res.data?.data;
+    return res.data?.data || null;
   },
 
   getUserAchievements: async (userId: number): Promise<Achievement[]> => {
+    if (!userId || userId <= 0) return [];
     const res = await api.get(`/achievements/${userId}`);
     return res.data?.data || [];
   }

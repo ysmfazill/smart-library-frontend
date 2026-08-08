@@ -43,8 +43,10 @@ export const bookService = {
     return res.data;
   },
 
-  getRecommendedBooks: async (userId = 1, limit = 10) => {
-    const res = await api.get('/books/recommended', { params: { userId, limit } });
+  getRecommendedBooks: async (userId?: number, limit = 10) => {
+    if (userId !== undefined && userId <= 0) return { content: [] };
+    const params = userId && userId > 0 ? { userId, limit } : { limit };
+    const res = await api.get('/books/recommended', { params });
     return res.data;
   },
 

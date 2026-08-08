@@ -38,16 +38,20 @@ export const authService = {
   },
 
   getProfile: async (userId?: number) => {
-    const res = await api.get('/auth/profile', { params: { userId } });
+    if (userId !== undefined && userId <= 0) return null;
+    const params = userId && userId > 0 ? { userId } : {};
+    const res = await api.get('/auth/profile', { params });
     return res.data;
   },
 
   updateProfile: async (userId: number, data: Partial<RegisterDTO>) => {
+    if (!userId || userId <= 0) return null;
     const res = await api.put('/auth/profile', data, { params: { userId } });
     return res.data;
   },
 
   changePassword: async (userId: number, oldPassword: string, newPassword: string) => {
+    if (!userId || userId <= 0) return null;
     const res = await api.put('/auth/change-password', null, {
       params: { userId, oldPassword, newPassword },
     });

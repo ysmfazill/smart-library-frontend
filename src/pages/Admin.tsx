@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import AppLayout from '../components/AppLayout';
 import { adminService } from '../services/adminService';
 import type { BookPreview, ImportSummary } from '../services/adminService';
 
@@ -59,6 +58,11 @@ const Admin: React.FC = () => {
     }
     return () => { mounted = false; };
   }, [activeTab]);
+
+  // Reset page when search query changes
+  useEffect(() => {
+    setBookPage(0);
+  }, [bookSearchQuery]);
 
   // Fetch books separately for search and pagination
   useEffect(() => {
@@ -244,56 +248,48 @@ const Admin: React.FC = () => {
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen relative overflow-x-hidden">
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-      </div>
-
-      <Navbar />
-      <Sidebar />
-
-      <main className="md:ml-sidebar-width pt-28 px-container-padding pb-section-gap max-w-[1440px] mx-auto min-h-screen">
-        {/* ── Header ── */}
-        <section className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="font-headline-lg text-headline-lg mb-1 flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                admin_panel_settings
-              </span>
-              Admin Dashboard
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              Manage users, inventory, system statistics, and bulk Excel data imports.
-            </p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 rounded-xl text-label-md font-semibold transition-all cursor-pointer ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10'}`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`px-4 py-2 rounded-xl text-label-md font-semibold transition-all cursor-pointer ${activeTab === 'users' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10'}`}
-            >
-              Users
-            </button>
-            <button
-              onClick={() => setActiveTab('books')}
-              className={`px-4 py-2 rounded-xl text-label-md font-semibold transition-all cursor-pointer ${activeTab === 'books' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10'}`}
-            >
-              Books
-            </button>
-            <button
-              onClick={() => setActiveTab('import')}
-              className={`px-4 py-2 rounded-xl text-label-md font-semibold transition-all cursor-pointer flex items-center gap-2 ${activeTab === 'import' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10 text-primary'}`}
-            >
-              <span className="material-symbols-outlined text-[18px]">upload_file</span>
-              Import Books
-            </button>
-          </div>
-        </section>
+    <AppLayout>
+            {/* ── Header ── */}
+            <section className="mb-6 sm:mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2.5 sm:gap-3 text-primary">
+                  <span className="material-symbols-outlined text-primary text-2xl sm:text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    admin_panel_settings
+                  </span>
+                  Admin Dashboard
+                </h1>
+                <p className="text-xs sm:text-sm text-on-surface-variant">
+                  Manage users, inventory, system statistics, and bulk Excel data imports.
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap overflow-x-auto custom-scrollbar pb-1 w-full lg:w-auto">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10'}`}
+                >
+                  Overview
+                </button>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${activeTab === 'users' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10'}`}
+                >
+                  Users
+                </button>
+                <button
+                  onClick={() => setActiveTab('books')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${activeTab === 'books' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10'}`}
+                >
+                  Books
+                </button>
+                <button
+                  onClick={() => setActiveTab('import')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 min-h-[38px] ${activeTab === 'import' ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary/10 text-primary'}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                  Import Books
+                </button>
+              </div>
+            </section>
 
         {/* ── Dashboard Tab ── */}
         {activeTab === 'dashboard' && (
@@ -911,9 +907,8 @@ const Admin: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
-  );
+    </AppLayout>
+);
 };
 
 export default Admin;

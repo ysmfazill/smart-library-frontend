@@ -47,7 +47,7 @@ const Welcome: React.FC = () => {
   // Try to load interests from API, fall back to static list
   useEffect(() => {
     let cancelled = false;
-    interestService.getUserInterests(0).then((res: any) => {
+    interestService.getAllInterests().then((res: any) => {
       if (cancelled) return;
       const list = Array.isArray(res) ? res : (res?.content || []);
       if (list.length > 0) {
@@ -100,7 +100,7 @@ const Welcome: React.FC = () => {
 
   return (
     <div
-      className="flex items-center justify-center p-4 md:p-8 min-h-screen"
+      className="flex items-center justify-center p-3 sm:p-6 md:p-8 min-h-screen w-full overflow-x-hidden"
       style={{
         background: 'radial-gradient(circle at top right, #ebddff 0%, #f7f9fb 40%), radial-gradient(circle at bottom left, #d8e2ff 0%, #f7f9fb 40%)',
       }}
@@ -108,12 +108,12 @@ const Welcome: React.FC = () => {
       <div className="fixed top-0 right-0 -z-10 w-1/2 h-1/2 bg-gradient-to-br from-primary/10 to-transparent blur-[120px] pointer-events-none" />
       <div className="fixed bottom-0 left-0 -z-10 w-1/2 h-1/2 bg-gradient-to-tr from-secondary/10 to-transparent blur-[120px] pointer-events-none" />
 
-      <main className="w-full max-w-5xl glass-card rounded-[32px] overflow-hidden shadow-[0_24px_48px_-12px_rgba(0,0,0,0.1)] relative">
+      <main className="w-full max-w-5xl glass-card rounded-2xl sm:rounded-[32px] overflow-hidden shadow-[0_24px_48px_-12px_rgba(0,0,0,0.1)] relative">
         {/* Progress bar */}
-        <div className="px-8 pt-8 pb-4">
+        <div className="px-4 sm:px-8 pt-4 sm:pt-8 pb-3 sm:pb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-semibold text-on-surface-variant">Step 1 of 2</span>
-            <span className="text-xs font-bold text-primary">Personalization</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-on-surface-variant">Step 1 of 2</span>
+            <span className="text-[10px] sm:text-xs font-bold text-primary">Personalization</span>
           </div>
           <div className="h-2 w-full bg-surface-container rounded-full overflow-hidden">
             <div
@@ -124,21 +124,22 @@ const Welcome: React.FC = () => {
         </div>
 
         <div className="flex flex-col h-full">
-          <div className="flex-1 p-8 md:p-12 flex flex-col max-h-[870px]">
-            <header className="relative mb-10">
+          <div className="flex-1 p-4 sm:p-8 md:p-12 flex flex-col max-h-[85vh] sm:max-h-[870px]">
+            <header className="relative mb-4 sm:mb-8 flex items-center gap-4">
+              <img src="/logo.png" alt="Readify App Logo" className="w-12 h-12 sm:w-16 sm:h-16 object-contain shrink-0" />
               <div className="relative z-10">
-                <h1 className="text-[32px] font-semibold leading-[1.2] tracking-[-0.01em] text-on-surface mb-3 flex items-center gap-2">
-                  👋 Welcome to Smart Library
+                <h1 className="text-xl sm:text-2xl md:text-[32px] font-bold leading-tight tracking-tight text-on-surface mb-1 flex items-center gap-2">
+                  👋 Welcome to Readify App
                 </h1>
-                <p className="text-base text-on-surface-variant max-w-xl">
-                  Let's personalize your reading experience. Select the topics you're interested in so we can recommend books you'll love.
+                <p className="text-xs sm:text-sm md:text-base text-on-surface-variant max-w-xl">
+                  Let's personalize your reading experience. Select the topics you're interested in so our smart engine can recommend books you'll love.
                 </p>
               </div>
             </header>
 
             {/* Interest grid */}
-            <div className="flex-1 overflow-y-auto pr-4 mb-8 custom-scrollbar">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex-1 overflow-y-auto pr-1 sm:pr-4 mb-4 sm:mb-8 custom-scrollbar">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {interests.map(cat => {
                   const isSelected = selected.has(cat.id);
                   const isDisabled = !isSelected && selected.size >= MAX_INTERESTS;
@@ -150,20 +151,20 @@ const Welcome: React.FC = () => {
                       tabIndex={isDisabled ? -1 : 0}
                       onClick={() => !isDisabled && toggle(cat)}
                       onKeyDown={(e) => e.key === 'Enter' && !isDisabled && toggle(cat)}
-                      className={`interest-card glass-card rounded-2xl p-4 border border-white/40 flex flex-col gap-2 relative group cursor-pointer ${isSelected ? 'selected' : ''} ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      className={`interest-card glass-card rounded-2xl p-3.5 sm:p-4 border border-white/40 flex flex-col gap-1.5 sm:gap-2 relative group cursor-pointer min-h-[80px] ${isSelected ? 'selected' : ''} ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex justify-between items-start">
-                        <div className="p-2 rounded-xl bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
-                          <span className="material-symbols-outlined text-[24px]">{cat.icon}</span>
+                        <div className="p-1.5 sm:p-2 rounded-xl bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
+                          <span className="material-symbols-outlined text-[20px] sm:text-[24px]">{cat.icon}</span>
                         </div>
                         <div
-                          className={`w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center transition-all duration-300 ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
+                          className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary text-white flex items-center justify-center transition-all duration-300 ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
                         >
-                          <span className="material-symbols-outlined text-[16px] font-bold">check</span>
+                          <span className="material-symbols-outlined text-[14px] sm:text-[16px] font-bold">check</span>
                         </div>
                       </div>
-                      <h3 className="text-sm font-medium text-on-surface mt-1">{cat.name}</h3>
-                      <p className="text-[11px] leading-tight text-on-surface-variant opacity-70">{cat.desc}</p>
+                      <h3 className="text-xs sm:text-sm font-semibold text-on-surface">{cat.name}</h3>
+                      <p className="text-[10px] sm:text-[11px] leading-tight text-on-surface-variant opacity-70 line-clamp-2">{cat.desc}</p>
                     </div>
                   );
                 })}
@@ -171,37 +172,37 @@ const Welcome: React.FC = () => {
             </div>
 
             {/* Footer actions */}
-            <div className="pt-6 border-t border-outline-variant/30">
+            <div className="pt-4 sm:pt-6 border-t border-outline-variant/30">
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+                <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-medium">
                   {error}
                 </div>
               )}
-              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-primary/5 border border-primary/10">
-                <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <div className="flex items-center gap-2.5 sm:gap-3 mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-primary/5 border border-primary/10 text-xs sm:text-sm">
+                <span className="material-symbols-outlined text-primary text-base sm:text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
                   lightbulb
                 </span>
-                <p className="text-sm font-medium text-on-surface-variant">
+                <p className="text-on-surface-variant">
                   <span className="font-bold text-primary">Tip:</span> The more interests you select, the better your recommendations become.
                   {' '}({selected.size}/{MAX_INTERESTS} selected)
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-xs font-semibold text-outline order-2 sm:order-1">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                <p className="text-[11px] sm:text-xs font-semibold text-outline text-center sm:text-left order-2 sm:order-1">
                   You can change your interests anytime from your Profile.
                 </p>
-                <div className="flex items-center gap-4 w-full sm:w-auto order-1 sm:order-2">
+                <div className="flex items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
                   <button
                     onClick={handleSkip}
                     disabled={saving}
-                    className="px-6 py-3 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+                    className="flex-1 sm:flex-initial px-4 sm:px-6 py-3 text-xs sm:text-sm font-medium text-on-surface-variant hover:text-primary transition-colors min-h-[48px]"
                   >
                     Skip for Now
                   </button>
                   <button
                     onClick={handleContinue}
                     disabled={!canContinue || saving}
-                    className={`px-8 py-3 text-white font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all min-w-[140px] justify-center ${
+                    className={`flex-1 sm:flex-initial px-6 sm:px-8 py-3 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg flex items-center gap-2 transition-all min-h-[48px] justify-center ${
                       canContinue && !saving
                         ? 'accent-gradient shadow-primary/20 hover:scale-105 active:scale-95 cursor-pointer'
                         : 'bg-outline/30 cursor-not-allowed shadow-none'
@@ -210,7 +211,7 @@ const Welcome: React.FC = () => {
                     {saving ? (
                       <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving…</>
                     ) : (
-                      <>Continue <span className="material-symbols-outlined text-[20px]">arrow_forward</span></>
+                      <>Continue <span className="material-symbols-outlined text-[18px]">arrow_forward</span></>
                     )}
                   </button>
                 </div>

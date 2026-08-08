@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import AppLayout from '../components/AppLayout';
 import { useUserProfile } from '../context/UserProfileContext';
 import type { Theme, FontSize, Language } from '../context/UserProfileContext';
 
@@ -124,58 +123,52 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen relative overflow-x-hidden">
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-tl from-secondary/5 via-transparent to-primary/5" />
-      </div>
+    <AppLayout>
 
-      <Navbar />
-      <Sidebar />
+          {/* Save toast */}
+          <div className={`fixed top-20 sm:top-24 right-4 sm:right-6 z-50 flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl ai-gradient-bg text-white shadow-lg text-xs sm:text-sm transition-all duration-300 ${saveNotice ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            Settings saved!
+          </div>
 
-      {/* Save toast */}
-      <div className={`fixed top-24 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl ai-gradient-bg text-white shadow-lg transition-all duration-300 ${saveNotice ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
-        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-        Settings saved!
-      </div>
+          <main className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 max-w-[1440px] mx-auto w-full">
 
-      <main className="md:ml-sidebar-width pt-28 px-container-padding pb-section-gap max-w-[1440px] mx-auto min-h-screen">
+            {/* ── Header ── */}
+            <section className="mb-6 sm:mb-8">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2.5 sm:gap-3 text-primary">
+                <span className="material-symbols-outlined text-primary text-2xl sm:text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  settings
+                </span>
+                Settings
+              </h1>
+              <p className="text-xs sm:text-sm text-on-surface-variant">
+                Customize your Readify experience. All preferences are stored locally.
+              </p>
+            </section>
 
-        {/* ── Header ── */}
-        <section className="mb-10">
-          <h1 className="font-headline-lg text-headline-lg mb-1 flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-              settings
-            </span>
-            Settings
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Customize your Aethelgard experience. All preferences are stored locally.
-          </p>
-        </section>
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
 
-        <div className="flex flex-col lg:flex-row gap-gutter">
-
-          {/* ── Sidebar tabs ── */}
-          <nav className="lg:w-56 shrink-0">
-            <div className="glass-card rounded-2xl p-2 flex lg:flex-col flex-row overflow-x-auto no-scrollbar gap-1">
-              {TABS.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-label-md font-semibold transition-all whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === tab.id ? "'FILL' 1" : "'FILL' 0", fontSize: '20px' }}>
-                    {tab.icon}
-                  </span>
-                  <span className="hidden lg:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          </nav>
+              {/* ── Sidebar tabs ── */}
+              <nav className="lg:w-56 shrink-0">
+                <div className="glass-card rounded-2xl p-1.5 sm:p-2 flex lg:flex-col flex-row overflow-x-auto custom-scrollbar gap-1">
+                  {TABS.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap min-h-[40px] ${
+                        activeTab === tab.id
+                          ? 'bg-primary/10 text-primary font-bold'
+                          : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px] sm:text-[20px]" style={{ fontVariationSettings: activeTab === tab.id ? "'FILL' 1" : "'FILL' 0" }}>
+                        {tab.icon}
+                      </span>
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </nav>
 
           {/* ── Content panels ── */}
           <div className="flex-1 min-w-0">
@@ -392,21 +385,11 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             )}
-
           </div>
         </div>
       </main>
 
-      <footer className="md:ml-sidebar-width bg-surface border-t border-outline-variant/30 py-8 mt-section-gap relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-center px-container-padding max-w-[1440px] mx-auto gap-4 text-label-sm text-on-surface-variant">
-          <p>© 2024 Aethelgard AI. Precision in knowledge.</p>
-          <div className="flex gap-8">
-            <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 };
 

@@ -5,13 +5,25 @@ const DEFAULT_COVER = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c
 
 // ── Book DTO → Frontend Book ──────────────────────────────────────────────────
 export function mapBookDTO(dto: any): Book {
+  if (!dto || typeof dto !== 'object') {
+    return {
+      id: '',
+      title: 'Untitled',
+      author: 'Unknown Author',
+      cover: DEFAULT_COVER,
+      rating: 0,
+      category: 'General',
+      description: '',
+      keywords: [],
+    };
+  }
   return {
-    id: String(dto.id),
+    id: dto.id !== undefined && dto.id !== null ? String(dto.id) : '',
     title: dto.title || 'Untitled',
     author: dto.author || 'Unknown Author',
     cover: dto.coverImage || dto.cover || DEFAULT_COVER,
-    rating: typeof dto.rating === 'number' ? dto.rating : 0,
-    category: dto.category?.name || dto.categoryName || dto.category || 'General',
+    rating: typeof dto.rating === 'number' && !isNaN(dto.rating) ? dto.rating : 0,
+    category: dto.category?.name || dto.categoryName || (typeof dto.category === 'string' ? dto.category : 'General'),
     categoryId: dto.category?.id || dto.categoryId,
     description: dto.description || '',
     publicationYear: dto.publicationYear,
@@ -19,7 +31,7 @@ export function mapBookDTO(dto: any): Book {
     pages: dto.pages,
 
     keywords: dto.keywords
-      ? (typeof dto.keywords === 'string' ? dto.keywords.split(',').map((k: string) => k.trim()).filter(Boolean) : dto.keywords)
+      ? (typeof dto.keywords === 'string' ? dto.keywords.split(',').map((k: string) => k.trim()).filter(Boolean) : Array.isArray(dto.keywords) ? dto.keywords : [])
       : [],
     isbn: dto.isbn,
     availableCopies: dto.availableCopies,
@@ -30,13 +42,24 @@ export function mapBookDTO(dto: any): Book {
 
 // ── BookSummaryDTO → Frontend Book ────────────────────────────────────────────
 export function mapBookSummaryDTO(dto: any): Book {
+  if (!dto || typeof dto !== 'object') {
+    return {
+      id: '',
+      title: 'Untitled',
+      author: 'Unknown Author',
+      cover: DEFAULT_COVER,
+      rating: 0,
+      category: 'General',
+      description: '',
+    };
+  }
   return {
-    id: String(dto.id),
+    id: dto.id !== undefined && dto.id !== null ? String(dto.id) : '',
     title: dto.title || 'Untitled',
     author: dto.author || 'Unknown Author',
     cover: dto.coverImage || dto.cover || DEFAULT_COVER,
-    rating: typeof dto.rating === 'number' ? dto.rating : 0,
-    category: dto.categoryName || dto.category?.name || 'General',
+    rating: typeof dto.rating === 'number' && !isNaN(dto.rating) ? dto.rating : 0,
+    category: dto.categoryName || dto.category?.name || (typeof dto.category === 'string' ? dto.category : 'General'),
     categoryId: dto.categoryId || dto.category?.id,
     description: dto.description || '',
     publicationYear: dto.publicationYear,
