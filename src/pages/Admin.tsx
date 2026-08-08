@@ -42,6 +42,70 @@ const Admin: React.FC = () => {
   const [selectedPdfFile, setSelectedPdfFile] = useState<File | null>(null);
   const pdfFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Dedicated Quick PDF Upload Modal State (Per Book)
+  const [quickUploadBook, setQuickUploadBook] = useState<any | null>(null);
+  const [quickPdfFile, setQuickPdfFile] = useState<File | null>(null);
+  const [quickUploading, setQuickUploading] = useState(false);
+  const [quickUploadError, setQuickUploadError] = useState<string | null>(null);
+  const quickFileInputRef = useRef<HTMLInputElement>(null);
+
+  const openQuickPdfUpload = (book: any) => {
+    setQuickUploadBook(book);
+    setQuickPdfFile(null);
+    setQuickUploadError(null);
+  };
+
+  const handleQuickPdfSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickUploadBook) return;
+
+    if (!quickPdfFile) {
+      setQuickUploadError('Please select a valid PDF file to upload.');
+      return;
+    }
+
+    if (!quickPdfFile.name.toLowerCase().endsWith('.pdf')) {
+      setQuickUploadError('Invalid file format. Only .pdf files are supported.');
+      return;
+    }
+
+    const maxBytes = 50 * 1024 * 1024; // 50MB
+    if (quickPdfFile.size > maxBytes) {
+      setQuickUploadError('File size exceeds the maximum allowed limit of 50MB.');
+      return;
+    }
+
+    setQuickUploading(true);
+    setQuickUploadError(null);
+
+    try {
+      const updatedBookRes = await adminService.uploadBookFile(quickUploadBook.id, quickPdfFile);
+      const updatedBook = updatedBookRes?.data || updatedBookRes;
+
+      // Update locally in booksList
+      setBooksList(prev =>
+        prev.map(b =>
+          String(b.id) === String(quickUploadBook.id)
+            ? {
+                ...b,
+                bookFileUrl: updatedBook?.bookFileUrl || `/api/books/${quickUploadBook.id}/file`,
+                bookFileName: updatedBook?.bookFileName || quickPdfFile.name,
+                bookFileType: 'application/pdf'
+              }
+            : b
+        )
+      );
+
+      setQuickUploadBook(null);
+      setQuickPdfFile(null);
+    } catch (err: any) {
+      console.error('Quick PDF upload failed:', err);
+      setQuickUploadError(err?.response?.data?.message || 'PDF upload failed. Please try again.');
+    } finally {
+      setQuickUploading(false);
+    }
+  };
+
   // Fetch dashboard, users, and import history
   useEffect(() => {
     let mounted = true;
@@ -353,16 +417,17 @@ const Admin: React.FC = () => {
 
   const exportBooksCsv = () => {
     if (booksList.length === 0) return;
-    const headers = ['ID', 'Title', 'Author', 'Category', 'ISBN', 'Rating', 'Language', 'Year', 'Status'];
+    const headers = ['ID', 'Title', 'Author', 'Category', 'ISBN', 'Digital Book', 'Rating', 'Language', 'Year', 'Status'];
     const rows = booksList.map(b => [
       b.id,
       `"${(b.title || '').replace(/"/g, '""')}"`,
       `"${(b.author || '').replace(/"/g, '""')}"`,
       `"${(b.category?.name || b.categoryName || '').replace(/"/g, '""')}"`,
       `"${b.isbn || ''}"`,
-      b.rating,
+      b.bookFileUrl ? 'Yes' : 'No',
+      b.rating || '0.0',
       `"${b.language || ''}"`,
-      b.publicationYear,
+      b.publicationYear || '',
       b.status || 'PUBLISHED'
     ]);
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -649,15 +714,45 @@ const Admin: React.FC = () => {
                       <td className="p-4 text-body-md text-on-surface-variant">{book.category?.name || book.categoryName || 'N/A'}</td>
                       <td className="p-4 text-body-md text-on-surface-variant font-mono text-xs">{book.isbn || '—'}</td>
                       <td className="p-4 text-body-md">
-                        {book.bookFileUrl ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                            <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span> PDF Available
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container text-on-surface-variant/70">
-                            No PDF
-                          </span>
-                        )}
+                        <div className="flex flex-col gap-1.5 items-start">
+                          {book.bookFileUrl ? (
+                            <>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <span className="material-symbols-outlined text-[13px]">check_circle</span> ✓ PDF Available
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => openQuickPdfUpload(book)}
+                                  className="px-2.5 py-1 text-[11px] font-bold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                                >
+                                  <span className="material-symbols-outlined text-[13px]">sync</span> Replace PDF
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => window.open(`/read/${book.id}`, '_blank')}
+                                  className="px-2 py-1 text-[11px] font-semibold text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                                  title="Open Reader in new tab"
+                                >
+                                  <span className="material-symbols-outlined text-[13px]">visibility</span> View PDF
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                                <span className="material-symbols-outlined text-[13px]">warning</span> ⚠ No PDF
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => openQuickPdfUpload(book)}
+                                className="px-3 py-1 text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">upload_file</span> + Upload PDF
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4 text-body-md text-amber-600 font-bold">⭐ {book.rating || '0.0'}</td>
                       <td className="p-4 text-body-md text-on-surface-variant">{book.language || '—'}</td>
@@ -1294,6 +1389,127 @@ const Admin: React.FC = () => {
                   >
                     {savingBook && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                     {editingBookId ? 'Save Changes' : 'Upload & Save Book'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Dedicated Quick PDF Upload Modal (Per Book) ── */}
+        {quickUploadBook && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-surface glass-card rounded-3xl border border-outline-variant/30 max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8">
+              <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+                <div className="flex items-center gap-3 text-primary">
+                  <span className="material-symbols-outlined text-2xl">picture_as_pdf</span>
+                  <h2 className="text-xl font-bold text-on-surface">Upload Digital Book</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => !quickUploading && setQuickUploadBook(null)}
+                  className="p-1.5 text-on-surface-variant/70 hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              </div>
+
+              {/* Target Book Info Header Card */}
+              <div className="p-4 rounded-2xl bg-surface-container-high border border-outline-variant/30 flex items-center gap-4">
+                {quickUploadBook.coverImage ? (
+                  <img src={quickUploadBook.coverImage} alt={quickUploadBook.title} className="w-12 h-16 object-cover rounded shadow shrink-0" />
+                ) : (
+                  <div className="w-12 h-16 bg-surface-container-highest rounded flex items-center justify-center text-on-surface-variant shrink-0">
+                    <span className="material-symbols-outlined">menu_book</span>
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Target Book</p>
+                  <h3 className="text-base font-bold text-on-surface truncate" title={quickUploadBook.title}>
+                    {quickUploadBook.title}
+                  </h3>
+                  <p className="text-xs text-on-surface-variant truncate">
+                    by {quickUploadBook.author || 'Unknown Author'}
+                  </p>
+                </div>
+              </div>
+
+              {quickUploadError && (
+                <div className="p-3.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-medium flex items-center justify-between">
+                  <span>{quickUploadError}</span>
+                  <button onClick={() => setQuickUploadError(null)} className="text-red-500 hover:text-red-800">
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              )}
+
+              <form onSubmit={handleQuickPdfSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
+                    PDF File (.pdf only, max 50MB)
+                  </label>
+
+                  <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/30 rounded-2xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer"
+                       onClick={() => quickFileInputRef.current?.click()}
+                  >
+                    <input
+                      ref={quickFileInputRef}
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (!file.name.toLowerCase().endsWith('.pdf')) {
+                            setQuickUploadError('Please select a valid PDF file (.pdf).');
+                            return;
+                          }
+                          setQuickUploadError(null);
+                          setQuickPdfFile(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+
+                    <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
+                      <span className="material-symbols-outlined text-2xl">upload_file</span>
+                    </div>
+
+                    <p className="text-sm font-bold text-on-surface mb-1">
+                      {quickPdfFile ? quickPdfFile.name : 'Click to select PDF file'}
+                    </p>
+                    <p className="text-xs text-on-surface-variant">
+                      {quickPdfFile
+                        ? `File Size: ${(quickPdfFile.size / (1024 * 1024)).toFixed(2)} MB`
+                        : 'PDF format up to 50MB'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                  <button
+                    type="button"
+                    disabled={quickUploading}
+                    onClick={() => setQuickUploadBook(null)}
+                    className="px-5 py-2.5 rounded-xl border border-outline-variant/40 text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={quickUploading || !quickPdfFile}
+                    className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {quickUploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Uploading PDF...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-base">cloud_upload</span>
+                        Upload PDF
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
