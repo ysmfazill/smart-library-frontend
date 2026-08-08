@@ -113,6 +113,7 @@ export const adminService = {
     formData.append('file', file);
     const res = await api.post(`/admin/books/${bookId}/file`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
     });
     return res.data;
   },
