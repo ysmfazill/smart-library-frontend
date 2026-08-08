@@ -67,17 +67,31 @@ const Login: React.FC = () => {
               {/* Glow */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none" />
 
-              {/* Header */}
-              <div className="text-center mb-6 sm:mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 mb-2">
-                  <img src="/logo.png" alt="Readify App Logo" className="w-full h-full object-contain" />
+              {/* Centered Vertical Branding Group */}
+              <div className="flex flex-col items-center text-center mb-6 sm:mb-8">
+                {/* 1. Logo */}
+                <div className="login-anim-logo inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 mb-1.5 shrink-0">
+                  <img
+                    src="/logo.png"
+                    alt="Readify App Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary mb-1 sm:mb-2">
-                  Welcome Back 👋
-                </h2>
-                <p className="text-xs sm:text-sm text-on-surface-variant">
-                  Sign in to continue your personalized reading journey.
-                </p>
+
+                {/* 2. Readify Brand Heading directly below logo */}
+                <h1 className="login-anim-heading text-lg sm:text-xl font-extrabold tracking-tight text-primary mb-3">
+                  Readify
+                </h1>
+
+                {/* 3. Login Title & Subtitle */}
+                <div className="login-anim-heading space-y-1">
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
+                    Welcome Back 👋
+                  </h2>
+                  <p className="text-xs sm:text-sm text-on-surface-variant max-w-xs mx-auto">
+                    Sign in to continue your personalized reading journey.
+                  </p>
+                </div>
               </div>
 
               {errorMsg && (
@@ -87,7 +101,7 @@ const Login: React.FC = () => {
               )}
 
               {/* Form */}
-              <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-4 sm:space-y-6 login-anim-form" onSubmit={handleSubmit}>
                 {/* Email */}
                 <AuthInput
                   id="email"
@@ -153,7 +167,7 @@ const Login: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3 pt-2 login-anim-buttons">
                   <AuthButton
                     type="submit"
                     loading={loading}

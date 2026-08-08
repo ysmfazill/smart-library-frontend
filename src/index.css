@@ -243,3 +243,54 @@ body {
   background-clip: text;
 }
 
+/* ── Login Entrance Animations ── */
+@keyframes loginLogoEntrance {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes loginFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-anim-logo {
+  animation: loginLogoEntrance 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.login-anim-heading {
+  animation: loginFadeUp 400ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both;
+}
+
+.login-anim-form {
+  animation: loginFadeUp 450ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+}
+
+.login-anim-buttons {
+  animation: loginFadeUp 400ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-anim-logo,
+  .login-anim-heading,
+  .login-anim-form,
+  .login-anim-buttons {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+
