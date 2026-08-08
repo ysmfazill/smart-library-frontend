@@ -93,7 +93,7 @@ const Leaderboard: React.FC = () => {
                         <div key={entry.userId} className="flex flex-col items-center animate-slide-up shrink-0" style={{ animationDelay: style.delay, animationFillMode: 'both' }}>
                           <div className="text-2xl sm:text-4xl mb-1.5 animate-bounce" style={{ animationDuration: '2s' }}>{style.icon}</div>
                           <div className={`relative mb-2 sm:mb-4 ${entry.rank === 1 ? 'w-16 h-16 sm:w-24 sm:h-24' : 'w-14 h-14 sm:w-20 sm:h-20'}`}>
-                            <img src={entry.avatar.includes('/') ? entry.avatar : `/avatars/${entry.avatar}`} alt={entry.name} className={`w-full h-full rounded-full object-cover border-2 sm:border-4 ${isUser ? 'border-primary' : 'border-surface-container-highest'}`} onError={(e) => { if (!(e.target as HTMLImageElement).src.endsWith('/avatars/avatar1.png')) { (e.target as HTMLImageElement).src = '/avatars/avatar1.png'; } }} />
+                            <img src={entry.avatar?.includes('/') ? entry.avatar : `/avatars/${entry.avatar || 'avatar1.png'}`} alt={entry.name} className={`w-full h-full rounded-full object-cover border-2 sm:border-4 ${isUser ? 'border-primary' : 'border-surface-container-highest'}`} onError={(e) => { if (!(e.target as HTMLImageElement).src.endsWith('/avatars/avatar1.png')) { (e.target as HTMLImageElement).src = '/avatars/avatar1.png'; } }} />
                             {entry.topBadge && (
                               <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-surface rounded-full flex items-center justify-center text-xs sm:text-lg shadow-md border border-outline-variant">
                                 {entry.topBadge}
@@ -131,7 +131,7 @@ const Leaderboard: React.FC = () => {
                             #{entry.rank}
                           </div>
                           <div className="relative w-9 h-9 sm:w-12 sm:h-12 shrink-0">
-                            <img src={entry.avatar.includes('/') ? entry.avatar : `/avatars/${entry.avatar}`} alt={entry.name} className="w-full h-full rounded-full object-cover bg-surface-container" onError={(e) => { if (!(e.target as HTMLImageElement).src.endsWith('/avatars/avatar1.png')) { (e.target as HTMLImageElement).src = '/avatars/avatar1.png'; } }} />
+                            <img src={entry.avatar?.includes('/') ? entry.avatar : `/avatars/${entry.avatar || 'avatar1.png'}`} alt={entry.name} className="w-full h-full rounded-full object-cover bg-surface-container" onError={(e) => { if (!(e.target as HTMLImageElement).src.endsWith('/avatars/avatar1.png')) { (e.target as HTMLImageElement).src = '/avatars/avatar1.png'; } }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className={`font-bold text-xs sm:text-sm line-clamp-1 flex items-center gap-1.5 ${isUser ? 'text-primary' : 'text-on-surface'}`}>

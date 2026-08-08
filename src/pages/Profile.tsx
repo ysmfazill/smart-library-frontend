@@ -167,7 +167,7 @@ const Profile: React.FC = () => {
             <div className="glass-card rounded-2xl p-8 flex flex-col items-center text-center gap-4">
               <div className="relative group">
                 <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/20 shadow-xl bg-surface-container">
-                  <img src={profile.avatar.includes('/') ? profile.avatar : `/avatars/${profile.avatar || 'avatar1.png'}`} alt={profile.name} className="w-full h-full object-cover" onError={(e) => { if (!(e.target as HTMLImageElement).src.endsWith('/avatars/avatar1.png')) { (e.target as HTMLImageElement).src = '/avatars/avatar1.png'; } }} />
+                  <img src={profile.avatar?.includes('/') ? profile.avatar : `/avatars/${profile.avatar || 'avatar1.png'}`} alt={profile.name} className="w-full h-full object-cover" onError={(e) => { if (!(e.target as HTMLImageElement).src.endsWith('/avatars/avatar1.png')) { (e.target as HTMLImageElement).src = '/avatars/avatar1.png'; } }} />
                 </div>
                 {/* Avatar change overlay (UI only) */}
                 <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
