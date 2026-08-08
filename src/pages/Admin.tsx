@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AppLayout from '../components/AppLayout';
 import { adminService } from '../services/adminService';
+import { categoryService } from '../services/categoryService';
 import type { BookPreview, ImportSummary } from '../services/adminService';
 
 const Admin: React.FC = () => {
@@ -13,11 +14,33 @@ const Admin: React.FC = () => {
   const [popularAuthors, setPopularAuthors] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [booksList, setBooksList] = useState<any[]>([]);
+  const [categoriesList, setCategoriesList] = useState<any[]>([]);
   const [bookPage, setBookPage] = useState(0);
   const [bookTotalPages, setBookTotalPages] = useState(1);
   const [bookSearchQuery, setBookSearchQuery] = useState('');
   const [importHistoryList, setImportHistoryList] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+
+  // Single Book Add/Edit Modal State
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [editingBookId, setEditingBookId] = useState<number | string | null>(null);
+  const [savingBook, setSavingBook] = useState(false);
+  const [bookModalError, setBookModalError] = useState<string | null>(null);
+  const [bookFormData, setBookFormData] = useState({
+    title: '',
+    author: '',
+    isbn: '',
+    description: '',
+    categoryId: 1,
+    language: 'English',
+    publicationYear: new Date().getFullYear(),
+    pages: 300,
+    keywords: '',
+    coverImage: '',
+    totalCopies: 1,
+  });
+  const [selectedPdfFile, setSelectedPdfFile] = useState<File | null>(null);
+  const pdfFileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch dashboard, users, and import history
   useEffect(() => {
@@ -64,36 +87,139 @@ const Admin: React.FC = () => {
     setBookPage(0);
   }, [bookSearchQuery]);
 
+  // Fetch categories on mount
+  useEffect(() => {
+    categoryService.getAllCategories().then(res => {
+      const cats = res?.data || res || [];
+      if (Array.isArray(cats)) setCategoriesList(cats);
+    }).catch(console.error);
+  }, []);
+
+  const refreshBooks = async () => {
+    setLoadingData(true);
+    try {
+      const res = await adminService.getAdminBooks(bookPage, 10, bookSearchQuery);
+      const data = res?.data || res;
+      setBooksList(Array.isArray(data) ? data : data?.content || []);
+      setBookTotalPages(data?.totalPages || 1);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
   // Fetch books separately for search and pagination
   useEffect(() => {
-    let mounted = true;
     if (activeTab === 'books') {
-      const loadBooks = async () => {
-        setLoadingData(true);
-        try {
-          const res = await adminService.getAdminBooks(bookPage, 10, bookSearchQuery);
-          const data = res?.data || res;
-          if (mounted) {
-            setBooksList(Array.isArray(data) ? data : data?.content || []);
-            setBookTotalPages(data?.totalPages || 1);
-          }
-        } catch (e) {
-          console.error(e);
-        } finally {
-          if (mounted) setLoadingData(false);
-        }
-      };
-      
       const debounceTimer = setTimeout(() => {
-        loadBooks();
+        refreshBooks();
       }, 300);
-      
-      return () => {
-        mounted = false;
-        clearTimeout(debounceTimer);
-      };
+      return () => clearTimeout(debounceTimer);
     }
   }, [activeTab, bookPage, bookSearchQuery]);
+
+  const openAddBookModal = () => {
+    setEditingBookId(null);
+    setBookModalError(null);
+    setBookFormData({
+      title: '',
+      author: '',
+      isbn: '',
+      description: '',
+      categoryId: categoriesList[0]?.id || 1,
+      language: 'English',
+      publicationYear: new Date().getFullYear(),
+      pages: 300,
+      keywords: '',
+      coverImage: '',
+      totalCopies: 1,
+    });
+    setSelectedPdfFile(null);
+    setIsBookModalOpen(true);
+  };
+
+  const openEditBookModal = (book: any) => {
+    setEditingBookId(book.id);
+    setBookModalError(null);
+    setBookFormData({
+      title: book.title || '',
+      author: book.author || '',
+      isbn: book.isbn || '',
+      description: book.description || '',
+      categoryId: book.category?.id || book.categoryId || categoriesList[0]?.id || 1,
+      language: book.language || 'English',
+      publicationYear: book.publicationYear || new Date().getFullYear(),
+      pages: book.pages || 300,
+      keywords: Array.isArray(book.keywords) ? book.keywords.join(', ') : (book.keywords || ''),
+      coverImage: book.coverImage || '',
+      totalCopies: book.totalCopies || 1,
+    });
+    setSelectedPdfFile(null);
+    setIsBookModalOpen(true);
+  };
+
+  const handleDeleteBook = async (bookId: number | string) => {
+    if (!window.confirm('Are you sure you want to delete this book?')) return;
+    try {
+      await adminService.deleteBook(bookId);
+      await refreshBooks();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to delete book');
+    }
+  };
+
+  const handleSaveBookSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bookFormData.title || !bookFormData.author) {
+      setBookModalError('Title and Author are required fields.');
+      return;
+    }
+
+    setSavingBook(true);
+    setBookModalError(null);
+
+    try {
+      let savedBook: any;
+      const payload = {
+        title: bookFormData.title,
+        author: bookFormData.author,
+        isbn: bookFormData.isbn || null,
+        description: bookFormData.description,
+        categoryId: Number(bookFormData.categoryId),
+        language: bookFormData.language,
+        publicationYear: Number(bookFormData.publicationYear),
+        pages: Number(bookFormData.pages),
+        keywords: bookFormData.keywords,
+        coverImage: bookFormData.coverImage || null,
+        totalCopies: Number(bookFormData.totalCopies),
+      };
+
+      if (editingBookId) {
+        const res = await adminService.updateBook(editingBookId, payload);
+        savedBook = res?.data || res;
+      } else {
+        const res = await adminService.createBook(payload);
+        savedBook = res?.data || res;
+      }
+
+      const bookId = savedBook?.id || editingBookId;
+
+      // Upload digital PDF file if selected
+      if (selectedPdfFile && bookId) {
+        await adminService.uploadBookFile(bookId, selectedPdfFile);
+      }
+
+      setIsBookModalOpen(false);
+      setSelectedPdfFile(null);
+      await refreshBooks();
+    } catch (err: any) {
+      console.error('Failed to save book:', err);
+      setBookModalError(err?.response?.data?.message || 'Failed to save book. Please check fields and try again.');
+    } finally {
+      setSavingBook(false);
+    }
+  };
 
   // Excel Import States
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -478,7 +604,10 @@ const Admin: React.FC = () => {
                   >
                     <span className="material-symbols-outlined text-[18px]">upload_file</span> Bulk Excel Import
                   </button>
-                  <button className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 cursor-pointer">
+                  <button
+                    onClick={openAddBookModal}
+                    className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 cursor-pointer shadow-md"
+                  >
                       <span className="material-symbols-outlined text-[18px]">add</span> Add Single Book
                   </button>
                 </div>
@@ -491,19 +620,18 @@ const Admin: React.FC = () => {
                   <th className="p-4 font-semibold">Author</th>
                   <th className="p-4 font-semibold">Category</th>
                   <th className="p-4 font-semibold">ISBN</th>
+                  <th className="p-4 font-semibold">Digital File</th>
                   <th className="p-4 font-semibold">Rating</th>
                   <th className="p-4 font-semibold">Language</th>
                   <th className="p-4 font-semibold">Year</th>
-                  <th className="p-4 font-semibold">Copies</th>
-                  <th className="p-4 font-semibold">Status</th>
                   <th className="p-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loadingData ? (
-                  <tr><td colSpan={11} className="p-12 text-center"><div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"/></td></tr>
+                  <tr><td colSpan={10} className="p-12 text-center"><div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"/></td></tr>
                 ) : booksList.length === 0 ? (
-                  <tr><td colSpan={11} className="p-8 text-center text-on-surface-variant">No books available</td></tr>
+                  <tr><td colSpan={10} className="p-8 text-center text-on-surface-variant">No books available</td></tr>
                 ) : (
                   booksList.map((book: any) => (
                     <tr key={book.id} className="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
@@ -520,20 +648,33 @@ const Admin: React.FC = () => {
                       <td className="p-4 text-body-md text-on-surface-variant max-w-[150px] truncate">{book.author}</td>
                       <td className="p-4 text-body-md text-on-surface-variant">{book.category?.name || book.categoryName || 'N/A'}</td>
                       <td className="p-4 text-body-md text-on-surface-variant font-mono text-xs">{book.isbn || '—'}</td>
+                      <td className="p-4 text-body-md">
+                        {book.bookFileUrl ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                            <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span> PDF Available
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container text-on-surface-variant/70">
+                            No PDF
+                          </span>
+                        )}
+                      </td>
                       <td className="p-4 text-body-md text-amber-600 font-bold">⭐ {book.rating || '0.0'}</td>
                       <td className="p-4 text-body-md text-on-surface-variant">{book.language || '—'}</td>
                       <td className="p-4 text-body-md text-on-surface-variant">{book.publicationYear || '—'}</td>
-                      <td className="p-4 text-body-md text-on-surface-variant font-mono">{book.availableCopies ?? 0} / {book.totalCopies ?? 0}</td>
-                      <td className="p-4 text-body-md">
-                           <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold ${(book.status || 'Published') === 'Published' || (book.status || 'PUBLISHED') === 'PUBLISHED' ? 'bg-secondary/10 text-secondary' : 'bg-amber-100 text-amber-700'}`}>
-                              {book.status || 'PUBLISHED'}
-                          </span>
-                      </td>
                       <td className="p-4 flex justify-end gap-2 items-center h-full pt-6">
-                        <button className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title="Edit">
+                        <button
+                          onClick={() => openEditBookModal(book)}
+                          className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Book"
+                        >
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
-                        <button className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete">
+                        <button
+                          onClick={() => handleDeleteBook(book.id)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Book"
+                        >
                           <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </td>
@@ -907,8 +1048,260 @@ const Admin: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* ── Single Book Add / Edit Modal ── */}
+        {isBookModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-surface glass-card rounded-3xl border border-outline-variant/30 max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8">
+              <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+                <div className="flex items-center gap-3 text-primary">
+                  <span className="material-symbols-outlined text-2xl">
+                    {editingBookId ? 'edit_note' : 'library_add'}
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-on-surface">
+                    {editingBookId ? 'Edit Book Details' : 'Add New Digital Book'}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setIsBookModalOpen(false)}
+                  className="p-1.5 text-on-surface-variant/70 hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              </div>
+
+              {bookModalError && (
+                <div className="p-3.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-medium flex items-center justify-between">
+                  <span>{bookModalError}</span>
+                  <button onClick={() => setBookModalError(null)} className="text-red-500 hover:text-red-800">
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveBookSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Title */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Book Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Atomic Habits"
+                      value={bookFormData.title}
+                      onChange={e => setBookFormData({ ...bookFormData, title: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Author */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Author *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. James Clear"
+                      value={bookFormData.author}
+                      onChange={e => setBookFormData({ ...bookFormData, author: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Category *
+                    </label>
+                    <select
+                      value={bookFormData.categoryId}
+                      onChange={e => setBookFormData({ ...bookFormData, categoryId: Number(e.target.value) })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    >
+                      {categoriesList.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* ISBN */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      ISBN
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 978-0735211292"
+                      value={bookFormData.isbn}
+                      onChange={e => setBookFormData({ ...bookFormData, isbn: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none font-mono"
+                    />
+                  </div>
+
+                  {/* Language */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Language
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. English"
+                      value={bookFormData.language}
+                      onChange={e => setBookFormData({ ...bookFormData, language: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Publication Year */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Publication Year
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 2018"
+                      value={bookFormData.publicationYear}
+                      onChange={e => setBookFormData({ ...bookFormData, publicationYear: Number(e.target.value) })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Pages */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Total Pages
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 320"
+                      value={bookFormData.pages}
+                      onChange={e => setBookFormData({ ...bookFormData, pages: Number(e.target.value) })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Brief overview of the book content..."
+                      value={bookFormData.description}
+                      onChange={e => setBookFormData({ ...bookFormData, description: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Keywords */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Keywords (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="habits, productivity, psychology"
+                      value={bookFormData.keywords}
+                      onChange={e => setBookFormData({ ...bookFormData, keywords: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Cover Image URL */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                      Cover Image URL
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={bookFormData.coverImage}
+                      onChange={e => setBookFormData({ ...bookFormData, coverImage: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface-container rounded-xl text-sm border border-outline-variant/30 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {/* NEW: Book File PDF Upload */}
+                  <div className="sm:col-span-2 border-t border-outline-variant/20 pt-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-primary mb-2 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+                      Digital Book File (PDF Only)
+                    </label>
+                    
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-surface-container p-4 rounded-2xl border border-outline-variant/30">
+                      <input
+                        ref={pdfFileInputRef}
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                              alert('Please select a valid PDF file.');
+                              return;
+                            }
+                            setSelectedPdfFile(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => pdfFileInputRef.current?.click()}
+                        className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-bold flex items-center gap-2 border border-primary/30 cursor-pointer transition-all shrink-0 min-h-[38px]"
+                      >
+                        <span className="material-symbols-outlined text-base">upload_file</span>
+                        Choose PDF File
+                      </button>
+
+                      <div className="text-xs text-on-surface-variant truncate">
+                        {selectedPdfFile ? (
+                          <div className="flex flex-col">
+                            <span className="font-bold text-emerald-600 truncate">
+                              Selected file: {selectedPdfFile.name}
+                            </span>
+                            <span className="text-[11px] text-on-surface-variant font-medium">
+                              File size: {(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-on-surface-variant/70 italic">
+                            No new file selected (PDF format, up to 50MB)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 border-t border-outline-variant/20 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setIsBookModalOpen(false)}
+                    className="px-6 py-2.5 rounded-xl border border-outline-variant/40 text-sm font-semibold hover:bg-surface-container transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingBook}
+                    className="px-8 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {savingBook && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                    {editingBookId ? 'Save Changes' : 'Upload & Save Book'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
     </AppLayout>
-);
+  );
 };
 
 export default Admin;

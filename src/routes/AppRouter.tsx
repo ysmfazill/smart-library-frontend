@@ -20,6 +20,7 @@ const Collections       = React.lazy(() => import('../pages/Collections'));
 const Profile           = React.lazy(() => import('../pages/Profile'));
 const Settings          = React.lazy(() => import('../pages/Settings'));
 const Admin             = React.lazy(() => import('../pages/Admin'));
+const Reader            = React.lazy(() => import('../pages/Reader'));
 
 // ── Loading Fallback ────────────────────────────────────────────────────────
 const LoadingFallback = () => (
@@ -94,6 +95,7 @@ const AppRouter: React.FC = () => {
           <Route path="/search"           element={<ProtectedRoute><SearchBooks /></ProtectedRoute>} />
           <Route path="/recommendations"  element={<ProtectedRoute><OnboardingRoute><Recommendations /></OnboardingRoute></ProtectedRoute>} />
           <Route path="/book/:id"          element={<ProtectedRoute><ErrorBoundary fallbackMessage="Unable to display book details."><BookDetails /></ErrorBoundary></ProtectedRoute>} />
+          <Route path="/read/:id"          element={<ProtectedRoute><ErrorBoundary fallbackMessage="Unable to open reader."><Reader /></ErrorBoundary></ProtectedRoute>} />
           <Route path="/favorites"         element={<ProtectedRoute><OnboardingRoute><Favorites /></OnboardingRoute></ProtectedRoute>} />
           <Route path="/history"           element={<ProtectedRoute><OnboardingRoute><ReadingHistory /></OnboardingRoute></ProtectedRoute>} />
           <Route path="/collections"       element={<ProtectedRoute><OnboardingRoute><Collections /></OnboardingRoute></ProtectedRoute>} />

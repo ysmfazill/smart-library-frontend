@@ -326,8 +326,12 @@ const BookDetails: React.FC = () => {
                 </span>
                 <span className="text-sm font-bold text-primary">{entry.progress}%</span>
               </div>
-              <div className="w-full bg-surface-container-highest rounded-full h-2 mb-3">
+              <div className="w-full bg-surface-container-highest rounded-full h-2 mb-2">
                 <div className="h-2 rounded-full accent-gradient transition-all duration-500" style={{ width: `${entry.progress}%` }} />
+              </div>
+              <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium mb-3">
+                <span>Page {entry.currentPage || 1} of {entry.totalPages || book.pages || '—'}</span>
+                <span>{entry.completed ? '100% finished' : `${entry.progress}% completed`}</span>
               </div>
               {!completed && (
                 <>
@@ -340,9 +344,9 @@ const BookDetails: React.FC = () => {
                   />
                   <button
                     onClick={() => markCompleted(book.id)}
-                    className="mt-2 w-full py-2 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/5 transition-all min-h-[40px]"
+                    className="mt-2 w-full py-2 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/5 transition-all min-h-[40px] cursor-pointer"
                   >
-                    Mark as Completed
+                    Mark as Completed 🎉
                   </button>
                 </>
               )}
@@ -351,20 +355,30 @@ const BookDetails: React.FC = () => {
 
           {/* Action buttons */}
           <div className="flex flex-col gap-3">
-            <button
-              onClick={() => !completed && startReading(book.id)}
-              disabled={completed}
-              className={`h-14 rounded-xl font-bold text-base shadow-lg hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                completed
-                  ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
-                  : 'accent-gradient text-white shadow-primary/25 hover:shadow-primary/40'
-              }`}
-            >
-              <span className="material-symbols-outlined">
-                {completed ? 'check_circle' : reading ? 'play_arrow' : 'menu_book'}
-              </span>
-              {completed ? 'Finished Reading' : reading ? 'Continue Reading' : 'Start Reading'}
-            </button>
+            {book.bookFileUrl ? (
+              <button
+                onClick={async () => {
+                  if (!reading && !completed) {
+                    await startReading(book.id);
+                  }
+                  navigate(`/read/${book.id}`);
+                }}
+                className="h-14 rounded-xl font-bold text-base shadow-lg hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer accent-gradient text-white shadow-primary/25 hover:shadow-primary/40"
+              >
+                <span className="material-symbols-outlined">
+                  {completed ? 'replay' : reading ? 'play_arrow' : 'menu_book'}
+                </span>
+                {completed ? '📖 Read Again' : reading ? '📖 Continue Reading' : '📖 Start Reading'}
+              </button>
+            ) : (
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-3">
+                <span className="material-symbols-outlined text-xl shrink-0">info</span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider">Digital Reading Copy</p>
+                  <p className="text-xs font-medium mt-0.5">Digital reading copy not available for this book.</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3">
               <button

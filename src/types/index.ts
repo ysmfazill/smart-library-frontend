@@ -35,6 +35,10 @@ export interface Book {
   language?: string;
   pages?: number;
 
+  bookFileUrl?: string;
+  bookFileType?: string;
+  bookFileName?: string;
+
   keywords?: string[];
   similarBooks?: string[];
   isbn?: string;
@@ -50,9 +54,13 @@ export interface HistoryEntry {
   bookId: string;
   book: Book;
   progress: number;        // 0–100
+  currentPage?: number;
+  totalPages?: number;
+  status?: 'NOT_STARTED' | 'READING' | 'COMPLETED' | string;
   completed: boolean;
   lastReadAt: string;      // ISO string
   startedAt?: string;
+  completedAt?: string;
 }
 
 // ── Favorites ─────────────────────────────────────────────────────────────────

@@ -30,6 +30,10 @@ export function mapBookDTO(dto: any): Book {
     language: dto.language || 'English',
     pages: dto.pages,
 
+    bookFileUrl: dto.bookFileUrl,
+    bookFileType: dto.bookFileType,
+    bookFileName: dto.bookFileName,
+
     keywords: dto.keywords
       ? (typeof dto.keywords === 'string' ? dto.keywords.split(',').map((k: string) => k.trim()).filter(Boolean) : Array.isArray(dto.keywords) ? dto.keywords : [])
       : [],
@@ -65,6 +69,9 @@ export function mapBookSummaryDTO(dto: any): Book {
     publicationYear: dto.publicationYear,
     language: dto.language || 'English',
     pages: dto.pages,
+    bookFileUrl: dto.bookFileUrl,
+    bookFileType: dto.bookFileType,
+    bookFileName: dto.bookFileName,
     matchReason: dto.matchReason,
     recommendationScore: dto.recommendationScore,
     recommendationReason: dto.recommendationReason,
@@ -82,9 +89,13 @@ export function mapHistoryDTO(dto: any): HistoryEntry {
     bookId: String(dto.book?.id || dto.bookId || ''),
     book,
     progress,
+    currentPage: dto.currentPage || 1,
+    totalPages: dto.totalPages || book.pages || 0,
+    status: dto.status || (dto.completed || progress >= 100 ? 'COMPLETED' : 'READING'),
     completed: dto.completed === true || progress >= 100,
     lastReadAt: dto.lastReadDate || dto.lastReadAt || new Date().toISOString(),
     startedAt: dto.startedAt,
+    completedAt: dto.completedAt,
   };
 }
 

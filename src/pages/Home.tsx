@@ -217,7 +217,8 @@ const Home: React.FC = () => {
                 {inProgressBooks.slice(0, 4).map(entry => (
                   <div
                     key={entry.id}
-                    onClick={() => navigate(`/book/${entry.bookId}`)}
+                    onClick={() => navigate(`/read/${entry.bookId}`)}
+                    className="flex-none w-36 sm:w-44 glass-card p-3 rounded-xl hover-lift cursor-pointer group"
                   >
                     <div className="relative aspect-[2/3] rounded-xl overflow-hidden mb-3">
                       <img
@@ -226,16 +227,24 @@ const Home: React.FC = () => {
                         loading="eager"
                         fetchPriority="high"
                         decoding="async"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600'; }}
                       />
-                      <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg">
+                          <span className="material-symbols-outlined text-xl">play_arrow</span>
+                        </div>
+                      </div>
+                      <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                         <div className="h-1.5 bg-white/30 rounded-full">
                           <div className="h-full bg-primary rounded-full" style={{ width: `${entry.progress}%` }} />
                         </div>
-                        <p className="text-white text-[10px] font-bold mt-1">{entry.progress}% complete</p>
+                        <p className="text-white text-[10px] font-bold mt-1">
+                          {entry.currentPage ? `Page ${entry.currentPage}` : `${entry.progress}%`}
+                        </p>
                       </div>
                     </div>
-                    <p className="text-xs sm:text-sm font-bold line-clamp-1">{entry.book.title}</p>
+                    <p className="text-xs sm:text-sm font-bold line-clamp-1 group-hover:text-primary transition-colors">{entry.book.title}</p>
                     <p className="text-[11px] text-on-surface-variant line-clamp-1">{entry.book.author}</p>
                   </div>
                 ))}

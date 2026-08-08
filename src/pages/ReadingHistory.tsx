@@ -21,7 +21,6 @@ const timeAgo = (iso: string): string => {
 
 const ProgressCard: React.FC<{ entry: HistoryEntry }> = ({ entry }) => {
   const navigate = useNavigate();
-  const { updateProgress, markCompleted } = useReadingHistory();
   const { book, progress, bookId, lastReadAt } = entry;
 
   const coverFallback = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600';
@@ -47,9 +46,9 @@ const ProgressCard: React.FC<{ entry: HistoryEntry }> = ({ entry }) => {
       <div className="flex-1 min-w-0 w-full">
         <h3 className="text-sm sm:text-base font-bold mb-0.5 line-clamp-1">{book.title}</h3>
         <p className="text-xs sm:text-sm text-on-surface-variant mb-3 line-clamp-1">{book.author}</p>
-        <div className="mb-2">
+        <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-on-surface-variant">Progress</span>
+            <span className="text-on-surface-variant font-medium">Page {entry.currentPage || 1} of {entry.totalPages || book.pages || '—'}</span>
             <span className="font-bold text-primary">{progress}%</span>
           </div>
           <div className="w-full bg-surface-container-highest rounded-full h-2">
@@ -59,21 +58,14 @@ const ProgressCard: React.FC<{ entry: HistoryEntry }> = ({ entry }) => {
             />
           </div>
         </div>
-        <input
-          type="range"
-          min={0} max={100}
-          value={progress}
-          onClick={e => e.stopPropagation()}
-          onChange={e => { e.stopPropagation(); updateProgress(bookId, parseInt(e.target.value)); }}
-          className="w-full accent-slider cursor-pointer mb-2"
-        />
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-xs gap-2 pt-1 border-t border-outline-variant/20">
           <span className="text-on-surface-variant/60">Last read: {timeAgo(lastReadAt)}</span>
           <button
-            onClick={e => { e.stopPropagation(); markCompleted(bookId); }}
-            className="text-primary font-semibold hover:underline p-1 min-h-[36px]"
+            onClick={e => { e.stopPropagation(); navigate(`/read/${bookId}`); }}
+            className="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold shadow hover:opacity-90 transition-all flex items-center gap-1 cursor-pointer min-h-[34px]"
           >
-            Mark Done
+            <span className="material-symbols-outlined text-sm">play_arrow</span>
+            Continue Reading
           </button>
         </div>
       </div>

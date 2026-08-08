@@ -92,4 +92,28 @@ export const adminService = {
     const res = await api.get('/admin/imports/history', { params: { page, size } });
     return res.data;
   },
+
+  createBook: async (bookData: any) => {
+    const res = await api.post('/admin/books', bookData);
+    return res.data;
+  },
+
+  updateBook: async (bookId: number | string, bookData: any) => {
+    const res = await api.put(`/admin/books/${bookId}`, bookData);
+    return res.data;
+  },
+
+  deleteBook: async (bookId: number | string) => {
+    const res = await api.delete(`/admin/books/${bookId}`);
+    return res.data;
+  },
+
+  uploadBookFile: async (bookId: number | string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await api.post(`/admin/books/${bookId}/file`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
 };
