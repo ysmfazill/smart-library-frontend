@@ -4,36 +4,82 @@ import { useAuth } from '../context/AuthContext';
 import { interestService } from '../services/interestService';
 import type { Interest } from '../types';
 
+// ── Icon and description mapping for API interests ───────────────────────────
+interface InterestMeta {
+  icon?: string;
+  desc?: string;
+}
+
+const INTEREST_META: Record<string, InterestMeta> = {
+  'Artificial Intelligence': { icon: 'neurology', desc: 'Neural networks, LLMs, and AI ethics.' },
+  'Machine Learning': { icon: 'memory', desc: 'Algorithms and predictive modeling.' },
+  'Python': { icon: 'code', desc: 'Scripting, automation, AI, and data science.' },
+  'C++': { icon: 'terminal', desc: 'High-performance systems and memory management.' },
+  'Cyber Security': { icon: 'shield_lock', desc: 'Ethical hacking and network defense.' },
+  'Data Engineering': { icon: 'database', desc: 'Big data pipelines and ETL architecture.' },
+  'Distributed Systems': { icon: 'hub', desc: 'Consensus, scalability, and microservices.' },
+  'Quantum Computing': { icon: 'atom', desc: 'Qubits, superposition, and quantum logic.' },
+  'Web Architecture': { icon: 'html', desc: 'Full-stack systems and cloud web design.' },
+  'Philosophy of Mind': { icon: 'lightbulb', desc: 'Consciousness, logic, and cognition.' },
+  'Data Science': { icon: 'analytics', desc: 'Big data, analytics, and visualization.' },
+  'Java Programming': { icon: 'code_blocks', desc: 'Enterprise development and JVM.' },
+  'Web Development': { icon: 'web', desc: 'Full-stack, React, and modern CSS.' },
+  'Cloud Computing': { icon: 'cloud', desc: 'AWS, Azure, and infrastructure.' },
+  'Mobile App Dev': { icon: 'smartphone', desc: 'iOS, Android, and Flutter.' },
+  'UI/UX Design': { icon: 'palette', desc: 'Product design and user research.' },
+  'Business': { icon: 'business_center', desc: 'Strategy and corporate growth.' },
+  'Entrepreneurship': { icon: 'rocket_launch', desc: 'Startups and building ventures.' },
+  'Finance': { icon: 'payments', desc: 'Markets, personal finance, and crypto.' },
+  'Marketing': { icon: 'campaign', desc: 'Branding and digital advertising.' },
+  'Self Help': { icon: 'psychology_alt', desc: 'Personal growth and mindset.' },
+  'Productivity': { icon: 'timer', desc: 'Time management and workflows.' },
+  'Science': { icon: 'science', desc: 'Physics, biology, and the universe.' },
+  'History': { icon: 'history_edu', desc: 'Past civilizations and events.' },
+  'Biography': { icon: 'person_book', desc: 'Stories of influential lives.' },
+  'Fantasy': { icon: 'auto_fix_high', desc: 'Magic systems and world building.' },
+  'Mystery': { icon: 'search_check', desc: 'Thrillers and investigative plots.' },
+  'Romance': { icon: 'favorite', desc: 'Relationships and emotional journeys.' },
+  'Psychology': { icon: 'psychology', desc: 'Behavior and the human mind.' },
+  'Health & Fitness': { icon: 'fitness_center', desc: 'Nutrition and physical wellness.' },
+  'Philosophy': { icon: 'lightbulb', desc: 'Ethics, logic, and metaphysics.' },
+};
+
 // ── Static fallback interests (shown while API loads) ─────────────────────────
 const FALLBACK_INTERESTS: Interest[] = [
-  { id: 1, name: 'Artificial Intelligence', icon: 'neurology', desc: 'Neural networks, LLMs, and ethics.' },
+  { id: 1, name: 'Artificial Intelligence', icon: 'neurology', desc: 'Neural networks, LLMs, and AI ethics.' },
   { id: 2, name: 'Machine Learning', icon: 'memory', desc: 'Algorithms and predictive modeling.' },
-  { id: 3, name: 'Data Science', icon: 'database', desc: 'Big data, analytics, and visualization.' },
-  { id: 4, name: 'Java Programming', icon: 'terminal', desc: 'Enterprise development and JVM.' },
-  { id: 5, name: 'Python', icon: 'code', desc: 'Scripting, automation, and science.' },
-  { id: 6, name: 'Web Development', icon: 'html', desc: 'Full-stack, React, and modern CSS.' },
-  { id: 7, name: 'Cyber Security', icon: 'shield_lock', desc: 'Ethical hacking and network defense.' },
-  { id: 8, name: 'Cloud Computing', icon: 'cloud', desc: 'AWS, Azure, and infrastructure.' },
-  { id: 9, name: 'Mobile App Dev', icon: 'smartphone', desc: 'iOS, Android, and Flutter.' },
-  { id: 10, name: 'UI/UX Design', icon: 'palette', desc: 'Product design and user research.' },
-  { id: 11, name: 'Business', icon: 'business_center', desc: 'Strategy and corporate growth.' },
-  { id: 12, name: 'Entrepreneurship', icon: 'rocket_launch', desc: 'Startups and building ventures.' },
-  { id: 13, name: 'Finance', icon: 'payments', desc: 'Markets, personal finance, and crypto.' },
-  { id: 14, name: 'Marketing', icon: 'campaign', desc: 'Branding and digital advertising.' },
-  { id: 15, name: 'Self Help', icon: 'psychology_alt', desc: 'Personal growth and mindset.' },
-  { id: 16, name: 'Productivity', icon: 'timer', desc: 'Time management and workflows.' },
-  { id: 17, name: 'Science', icon: 'science', desc: 'Physics, biology, and the universe.' },
-  { id: 18, name: 'History', icon: 'history_edu', desc: 'Past civilizations and events.' },
-  { id: 19, name: 'Biography', icon: 'person_book', desc: 'Stories of influential lives.' },
-  { id: 20, name: 'Fantasy', icon: 'auto_fix_high', desc: 'Magic systems and world building.' },
-  { id: 21, name: 'Mystery', icon: 'search_check', desc: 'Thrillers and investigative plots.' },
-  { id: 22, name: 'Romance', icon: 'favorite', desc: 'Relationships and emotional journeys.' },
-  { id: 23, name: 'Psychology', icon: 'psychology', desc: 'Behavior and the human mind.' },
-  { id: 24, name: 'Health & Fitness', icon: 'fitness_center', desc: 'Nutrition and physical wellness.' },
-  { id: 25, name: 'Philosophy', icon: 'lightbulb', desc: 'Ethics, logic, and metaphysics.' },
+  { id: 3, name: 'Python', icon: 'code', desc: 'Scripting, automation, AI, and data science.' },
+  { id: 4, name: 'C++', icon: 'terminal', desc: 'High-performance systems and memory management.' },
+  { id: 5, name: 'Cyber Security', icon: 'shield_lock', desc: 'Ethical hacking and network defense.' },
+  { id: 6, name: 'Data Engineering', icon: 'database', desc: 'Big data pipelines and ETL architecture.' },
+  { id: 7, name: 'Distributed Systems', icon: 'hub', desc: 'Consensus, scalability, and microservices.' },
+  { id: 8, name: 'Quantum Computing', icon: 'atom', desc: 'Qubits, superposition, and quantum logic.' },
+  { id: 9, name: 'Web Architecture', icon: 'html', desc: 'Full-stack systems and cloud web design.' },
+  { id: 10, name: 'Philosophy of Mind', icon: 'lightbulb', desc: 'Consciousness, logic, and cognition.' },
+  { id: 11, name: 'Data Science', icon: 'analytics', desc: 'Big data, analytics, and visualization.' },
+  { id: 12, name: 'Java Programming', icon: 'code_blocks', desc: 'Enterprise development and JVM.' },
+  { id: 13, name: 'Web Development', icon: 'web', desc: 'Full-stack, React, and modern CSS.' },
+  { id: 14, name: 'Cloud Computing', icon: 'cloud', desc: 'AWS, Azure, and infrastructure.' },
+  { id: 15, name: 'Mobile App Dev', icon: 'smartphone', desc: 'iOS, Android, and Flutter.' },
+  { id: 16, name: 'UI/UX Design', icon: 'palette', desc: 'Product design and user research.' },
+  { id: 17, name: 'Business', icon: 'business_center', desc: 'Strategy and corporate growth.' },
+  { id: 18, name: 'Entrepreneurship', icon: 'rocket_launch', desc: 'Startups and building ventures.' },
+  { id: 19, name: 'Finance', icon: 'payments', desc: 'Markets, personal finance, and crypto.' },
+  { id: 20, name: 'Marketing', icon: 'campaign', desc: 'Branding and digital advertising.' },
+  { id: 21, name: 'Self Help', icon: 'psychology_alt', desc: 'Personal growth and mindset.' },
+  { id: 22, name: 'Productivity', icon: 'timer', desc: 'Time management and workflows.' },
+  { id: 23, name: 'Science', icon: 'science', desc: 'Physics, biology, and the universe.' },
+  { id: 24, name: 'History', icon: 'history_edu', desc: 'Past civilizations and events.' },
+  { id: 25, name: 'Biography', icon: 'person_book', desc: 'Stories of influential lives.' },
+  { id: 26, name: 'Fantasy', icon: 'auto_fix_high', desc: 'Magic systems and world building.' },
+  { id: 27, name: 'Mystery', icon: 'search_check', desc: 'Thrillers and investigative plots.' },
+  { id: 28, name: 'Romance', icon: 'favorite', desc: 'Relationships and emotional journeys.' },
+  { id: 29, name: 'Psychology', icon: 'psychology', desc: 'Behavior and the human mind.' },
+  { id: 30, name: 'Health & Fitness', icon: 'fitness_center', desc: 'Nutrition and physical wellness.' },
+  { id: 31, name: 'Philosophy', icon: 'lightbulb', desc: 'Ethics, logic, and metaphysics.' },
 ];
 
-const MIN_INTERESTS = 3;
+const MIN_INTERESTS = 1;
 const MAX_INTERESTS = 10;
 
 const Welcome: React.FC = () => {
@@ -51,12 +97,16 @@ const Welcome: React.FC = () => {
       if (cancelled) return;
       const list = Array.isArray(res) ? res : (res?.content || []);
       if (list.length > 0) {
-        setInterests(list.map((i: any): Interest => ({
-          id: i.id,
-          name: i.interestName || i.name || '',
-          icon: i.icon || 'bookmark',
-          desc: i.desc || i.description || '',
-        })));
+        setInterests(list.map((i: any): Interest => {
+          const name = i.interestName || i.name || '';
+          const meta = INTEREST_META[name];
+          return {
+            id: i.id,
+            name,
+            icon: i.icon || meta?.icon || 'bookmark',
+            desc: i.desc || i.description || meta?.desc || 'Explore related books and concepts.',
+          };
+        }));
       }
     }).catch(() => {/* stay with fallback */});
     return () => { cancelled = true; };
