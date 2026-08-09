@@ -10,6 +10,7 @@ import { reviewService } from '../services/reviewService';
 import { useAuth } from '../context/AuthContext';
 import type { Book } from '../types';
 import { mapBookDTO, estimateReadingTime } from '../utils/mappers';
+import { BookCover } from '../components/BookCover';
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 const DetailSkeleton = () => (
@@ -250,18 +251,7 @@ const BookDetails: React.FC = () => {
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 sm:gap-8 fade-in">
           <div className="relative group">
             <div className="absolute -inset-4 bg-primary/10 blur-3xl rounded-full opacity-30 group-hover:opacity-50 transition-opacity" />
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(109,40,217,0.25)] hover-lift">
-              <img
-                className="w-full h-full object-cover"
-                src={book.cover}
-                alt={book.title}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600'; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            </div>
+            <BookCover book={book} size="large" showBadge className="shadow-[0_32px_64px_-12px_rgba(109,40,217,0.25)] hover-lift" />
           </div>
 
           <div className="flex flex-col gap-3 sm:gap-4">

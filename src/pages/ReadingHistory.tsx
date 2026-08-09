@@ -6,6 +6,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useAuth } from '../context/AuthContext';
 import { computeStreak } from '../utils/mappers';
 import type { HistoryEntry } from '../types';
+import { BookCover } from '../components/BookCover';
 
 type Tab = 'in_progress' | 'completed' | 'analytics';
 
@@ -30,13 +31,8 @@ const ProgressCard: React.FC<{ entry: HistoryEntry }> = ({ entry }) => {
       className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-start book-card-hover transition-all duration-300 cursor-pointer group"
       onClick={() => navigate(`/book/${bookId}`)}
     >
-      <div className="relative shrink-0 mx-auto sm:mx-0">
-        <img
-          src={book.cover || coverFallback}
-          alt={book.title}
-          className="w-24 sm:w-20 h-32 sm:h-28 object-cover rounded-xl shadow-md group-hover:shadow-lg transition-shadow"
-          onError={(e) => { (e.target as HTMLImageElement).src = coverFallback; }}
-        />
+      <div className="relative shrink-0 mx-auto sm:mx-0 w-24 sm:w-20">
+        <BookCover book={book} />
         <div className="absolute -bottom-2 -right-2 w-8 h-8 accent-gradient rounded-full flex items-center justify-center text-white shadow-md">
           <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", fontSize: '16px' }}>
             play_arrow
@@ -84,13 +80,8 @@ const CompletedCard: React.FC<{ entry: HistoryEntry }> = ({ entry }) => {
       className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-start book-card-hover transition-all duration-300 cursor-pointer group"
       onClick={() => navigate(`/book/${bookId}`)}
     >
-      <div className="relative shrink-0 mx-auto sm:mx-0">
-        <img
-          src={book.cover || coverFallback}
-          alt={book.title}
-          className="w-24 sm:w-20 h-32 sm:h-28 object-cover rounded-xl shadow-md group-hover:shadow-lg transition-shadow"
-          onError={(e) => { (e.target as HTMLImageElement).src = coverFallback; }}
-        />
+      <div className="relative shrink-0 mx-auto sm:mx-0 w-24 sm:w-20">
+        <BookCover book={book} />
         <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white shadow-md">
           <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", fontSize: '16px' }}>
             check
