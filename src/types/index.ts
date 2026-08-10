@@ -23,7 +23,6 @@ export interface Book {
   title: string;
   author: string;
   cover: string;
-  coverSource?: 'REAL' | 'GENERATED' | string;
   rating: number;
   category: string;
   categoryId?: number;

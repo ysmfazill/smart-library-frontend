@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types';
 import { useFavorites } from '../context/FavoritesContext';
-import { BookCover } from './BookCover';
 
 interface BookCardProps {
   book: Book;
@@ -28,6 +27,8 @@ export const BookCard: React.FC<BookCardProps> = React.memo(({ book, className =
     }
   };
 
+  const coverFallback = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600';
+
   return (
     <div
       className={`glass-card rounded-2xl overflow-hidden book-card-hover transition-all duration-300 p-3.5 sm:p-4 cursor-pointer flex flex-col justify-between w-full h-full ${className}`}
@@ -37,7 +38,13 @@ export const BookCard: React.FC<BookCardProps> = React.memo(({ book, className =
     >
       <div>
         <div className="relative mb-3 sm:mb-4 group">
-          <BookCover book={book} />
+          <img
+            className="w-full aspect-[2/3] object-cover rounded-xl shadow-md"
+            src={book.cover || coverFallback}
+            alt={book.title}
+            onError={(e) => { (e.target as HTMLImageElement).src = coverFallback; }}
+            loading="lazy"
+          />
 
           {/* Favorite button */}
           <button
